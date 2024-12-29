@@ -1,0 +1,116 @@
+// Retro-style Basketball Game
+// Framework suggestion: Use HTML5 Canvas and JavaScript for simplicity
+
+// Initial Setup
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+document.body.appendChild(canvas);
+canvas.width = 800;
+canvas.height = 600;
+
+// Game Variables
+let score = 0;
+let gameSpeed = 5;
+
+const player = {
+    x: 50,
+    y: canvas.height / 2,
+    width: 50,
+    height: 50,
+    dy: 0
+};
+
+const ball = {
+    x: canvas.width - 100,
+    y: canvas.height / 2,
+    radius: 10,
+    dx: -gameSpeed,
+    dy: Math.random() * 4 - 2
+};
+
+const keys = {};
+
+// Event Listeners
+window.addEventListener('keydown', (e) => {
+    keys[e.code] = true;
+});
+
+window.addEventListener('keyup', (e) => {
+    keys[e.code] = false;
+});
+
+// Utility Functions
+function drawPlayer() {
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+function drawBall() {
+    ctx.fillStyle = 'orange';
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function updatePlayer() {
+    if (keys['ArrowUp'] && player.y > 0) {
+        player.y -= 5;
+    } else if (keys['ArrowDown'] && player.y + player.height < canvas.height) {
+        player.y += 5;
+    }
+}
+
+function updateBall() {
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    // Bounce ball off walls
+    if (ball.y <= 0 || ball.y >= canvas.height) {
+        ball.dy *= -1;
+    }
+
+    // Reset ball if it goes off-screen
+    if (ball.x + ball.radius < 0) {
+        ball.x = canvas.width - 100;
+        ball.y = Math.random() * canvas.height;
+        ball.dy = Math.random() * 4 - 2;
+        score++;
+    }
+}
+
+function checkCollision() {
+    if (
+        ball.x < player.x + player.width &&
+        ball.x + ball.radius > player.x &&
+        ball.y < player.y + player.height &&
+        ball.y + ball.radius > player.y
+    ) {
+        // Collision detected, end game
+        alert(`Game Over! Final Score: ${score}`);
+        document.location.reload();
+    }
+}
+
+// Game Loop
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Update
+    updatePlayer();
+    updateBall();
+    checkCollision();
+
+    // Draw
+    drawPlayer();
+    drawBall();
+
+    // Score Display
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.fillText(`Score: ${score}`, 10, 20);
+
+    requestAnimationFrame(gameLoop);
+}
+
+// Start the Game
+gameLoop();
